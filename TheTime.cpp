@@ -14,13 +14,18 @@
 
 #define CLOCK_TIMER 1
 
+/*ASCII codes of the main hours of the day.
+    "one" and "two" are used for the twelve
+*/
+enum hoursOfTheDay {one = 49, two = 50 , three = 51, six = 54, nine = 57};
+
 /*managing the time*/
 struct tm* currentTime; /*current time*/
 int hour, minute, second;
 
 void initializeTheFrame () {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-    glutInitWindowSize(600,500);
+    glutInitWindowSize(600,550);
     glutInitWindowPosition(200,100);
     glutCreateWindow("The Time");
 }
@@ -42,6 +47,18 @@ void initializeTheColor () {
     glShadeModel(GL_SMOOTH);
 }
 
+/*draw the background*/
+void drawBackground () {
+    glColor3f(1.0f,1.0f,1.0f);
+
+    glBegin(GL_POLYGON);
+		glVertex2f(-0.2f, -25.0f);
+	    glVertex2f(-0.2f,  25.0f);
+        glVertex2f( 0.2f,  25.0f);
+		glVertex2f( 0.2f, -25.0f);
+    glEnd();
+}
+
 /*draw second hand*/
 void drawSecond () {
 
@@ -50,10 +67,10 @@ void drawSecond () {
     //  SUCCESS: true
 
     glBegin(GL_POLYGON);
-		glVertex2f(-2.0f, -2.0f);
-	    glVertex2f(-2.0f,  25.0f);
-        glVertex2f( 2.0f,  25.0f);
-		glVertex2f( 2.0f, -2.0f);
+		glVertex2f(-1.5f, -1.5f);
+	    glVertex2f(-0.5f,  20.0f);
+        glVertex2f( 0.5f,  20.0f);
+		glVertex2f( 1.5f, -1.5f);
     glEnd();
 
 }
@@ -100,6 +117,24 @@ void drawTitle() {
 
 }
 
+/*drawing the main hour numbers (12 - 3 - 6 - 9*/
+void drawHourNumbers () {
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    glRasterPos2i(-2, 27);
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, one);
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, two);
+
+    glRasterPos2i(27, -1);
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, three);
+
+    glRasterPos2d(-1, -29);
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, six);
+
+    glRasterPos2i(-28, -1);
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, nine);
+}
+
 /*drawing the whole clock*/
 void drawClock () {
     glClear(GL_COLOR_BUFFER_BIT); /*clear the screen*/
@@ -111,9 +146,16 @@ void drawClock () {
     minuteDegree = minute * DEGREE_PER_MINUTE;
     hourDegree = hour * DEGREE_PER_HOUR;
 
+    for (int i = 0; i<6; i++) {
+        glPushMatrix();
+            glRotatef(i * DEGREE_PER_HOUR, 0, 0, -1);
+            drawBackground();
+        glPopMatrix();
+    }
+
     glPushMatrix();
-        glRotatef(secondDegree,0,0,-1);
-        drawSecond();
+        glRotatef(hourDegree,0,0,-1);
+        drawHour();
     glPopMatrix();
 
     glPushMatrix();
@@ -122,12 +164,16 @@ void drawClock () {
     glPopMatrix();
 
     glPushMatrix();
-        glRotatef(hourDegree,0,0,-1);
-        drawHour();
+        glRotatef(secondDegree,0,0,-1);
+        drawSecond();
     glPopMatrix();
 
     glPushMatrix();
         drawTitle();
+    glPopMatrix();
+
+    glPushMatrix();
+        drawHourNumbers();
     glPopMatrix();
 
     glutSwapBuffers();  /*draw on screen*/
